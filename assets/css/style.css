@@ -1,0 +1,40 @@
+/* Kindle-safe CSS */
+body {
+    font-family: serif;
+    margin: 5%;
+    line-height: 1.4;
+    color: #111;
+    background-color: #fff;
+}
+
+h1, h2, h3 {
+    text-align: center;
+    page-break-after: avoid;
+    font-family: sans-serif;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1em auto;
+}
+
+p {
+    margin-bottom: 1em;
+    text-align: justify;
+}
+
+.copyright {
+    font-size: 0.8em;
+    color: #555;
+    border-top: 1px solid #ccc;
+    margin-top: 2em;
+    padding-top: 1em;
+}
+
+.verse-num, .v, .chapter-num {
+    vertical-align: super;
+    font-size: 0.8em;
+    line-height: 0;
+}

@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "srt"
+version = "0.1.0"
+description = "Scrapes She Reads Truth reading plans and converts them to EPUB/HTML/Markdown for Kindle."
+readme = "README.md"
+authors = [{ name = "Your Name", email = "your.email@example.com" }]
+license = { text = "MIT" }
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.9"
+dependencies = [
+    "click>=8.1.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",
+    "Markdown>=3.5.0",
+    "EbookLib>=0.18",
+    "html2text>=2020.1.16",
+]
+
+[project.scripts]
+srt = "srt.cli:main"
