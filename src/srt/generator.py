@@ -204,10 +204,12 @@ def build_plan(slug_or_url: str, refresh: bool = False):
             html_out += f"<img src='../../images/{slug}/cover.jpg' alt='Cover Image' />"
             
         # Index Table of Contents linking to individual days
-        html_out += "<h2>Table of Contents</h2><ul>"
+        html_out += "<h2>Table of Contents</h2>"
+        html_out += "<ul>"
         for d in days_data:
             html_out += f"<li><a href='#day{d['day']}'>(Day {d['day']}) {d['title']}</a> — <em>{d['bible_ref']}</em></li>"
         html_out += "</ul><hr/>"
+
         
         # Daily chapters
         for d in days_data:
@@ -231,10 +233,7 @@ def build_plan(slug_or_url: str, refresh: bool = False):
             html_out += f"<div class='devotional-body'>{d['devotional']}</div>"
             html_out += "</section><hr/>"
             
-        # Copyright section
-        html_out += "<div class='copyright'>"
-        html_out += "<p>Plan content &copy; She Reads Truth.</p>"
-        html_out += "</div></body></html>"
+        html_out += "</body></html>"
 
         pretty_full_html = BeautifulSoup(html_out, "html.parser").prettify()
         with open(html_filename, "w", encoding="utf-8") as f:
