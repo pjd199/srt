@@ -55,7 +55,7 @@ def build_plan(slug_or_url: str, refresh: bool = False):
     if cover_img_elem and cover_img_elem.get("src"):
         cover_url = cover_img_elem["src"]
         try:
-            img_data = fetch_url(cover_url, refresh=refresh, ext="jpg", binary=True)
+            img_data = fetch_url(cover_url, ext="jpg", binary=True)
             cover_image_path = os.path.join(img_dir, "cover.jpg")
             with open(cover_image_path, "wb") as f:
                 f.write(img_data)
@@ -99,7 +99,7 @@ def build_plan(slug_or_url: str, refresh: bool = False):
     # 3. Scrape each targeted daily study page
     for item in raw_day_links:
         try:
-            day_html = fetch_url(item["url"], refresh=refresh, ext="html")
+            day_html = fetch_url(item["url"], ext="html")
             day_soup = BeautifulSoup(day_html, "html.parser")
             
             # 1. Author extraction from .post__meta or fallback signature
@@ -165,7 +165,7 @@ def build_plan(slug_or_url: str, refresh: bool = False):
             day_img_filename = ""
             if day_img_el and day_img_el.get("src"):
                 try:
-                    d_img_data = fetch_url(day_img_el["src"], refresh=refresh, ext="jpg", binary=True)
+                    d_img_data = fetch_url(day_img_el["src"], ext="jpg", binary=True)
                     day_img_filename = f"day{item['day']:03d}.jpg"
                     with open(os.path.join(img_dir, day_img_filename), "wb") as f:
                         f.write(d_img_data)
@@ -220,7 +220,7 @@ def build_plan(slug_or_url: str, refresh: bool = False):
             html_out += f"<p class='bible-ref'><strong>Scripture Reading:</strong> {d['bible_ref']}</p>"
             
             if d['image']:
-                html_out += f"<img src='../../images/{slug}/{d['image']}' alt='Day {d['day']}' />"
+                html_out += f"<img src='{img_dir}/{d['image']}' alt='Day {d['day']}' />"
                 
             # If bible version requested, split comma-separated references and query API sequentially
             if ver != "base" and d['bible_ref']:
@@ -277,10 +277,6 @@ def build_epub(slug: str, version: str = "base"):
 
     # Add it to the book manifest
     book.add_item(css_item)
-
-    # style_content = b"body { font-family: serif; margin: 5%; line-height: 1.4; } img { max-width: 100%; height: auto; display: block; margin: 1em auto; }"
-    # css_item = epub.EpubItem(uid="style", file_name="style.css", media_type="text/css", content=style_content)
-    # book.add_item(css_item)
     
     # 1. Handle Cover Image
     cover_path = os.path.join(img_dir, "cover.jpg")
