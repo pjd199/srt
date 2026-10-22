@@ -8,6 +8,9 @@ on:
         required: true
         default: 'luke-2'
         type: string
+  schedule:
+    # Runs daily at 04:00 UTC to keep cache warm
+    - cron: '0 4 * * *'
 
 jobs:
   build-plan:
