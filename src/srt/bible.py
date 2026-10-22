@@ -5,7 +5,7 @@ import urllib.parse
 from .cache import fetch_url
 
 ESV_API_KEY = os.environ.get("ESV_API_KEY", "IP")
-BIBLE_API_KEY = os.environ.get("API_BIBLE_KEY", "")
+API_BIBLE_KEY = os.environ.get("API_BIBLE_KEY", "")
 
 # API.Bible Translation ID Mapping
 BIBLE_IDS = {
@@ -58,7 +58,7 @@ def get_bible_books_map(bible_id: str, refresh: bool = False) -> dict:
 
 
     url = f"https://api.scripture.api.bible/v1/bibles/{bible_id}/books"
-    headers = {"api-key": BIBLE_API_KEY}
+    headers = {"api-key": API_BIBLE_KEY}
 
     mapping = {}
     try:
@@ -112,7 +112,7 @@ def fetch_apibible_passage(reference: str, version: str, refresh: bool = False) 
         return f"<p class='bible-error'>[Invalid Reference Format: {reference}]</p>"
         
     url = f"https://api.scripture.api.bible/v1/bibles/{bible_id}/passages/{passage_id}?content-type=html&include-notes=false&include-titles=false"
-    headers = {"api-key": BIBLE_API_KEY}
+    headers = {"api-key": API_BIBLE_KEY}
     
     try:
         res_text = fetch_url(url, refresh, ext="json", headers=headers)
