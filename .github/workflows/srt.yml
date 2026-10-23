@@ -54,6 +54,7 @@ jobs:
         env:
           API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
           ESV_API_KEY: ${{ secrets.ESV_API_KEY }}
+          PYTHONUNBUFFERED: "1"
         run: |
           srt download ${{ inputs.slug }} ${{ inputs.version }}
 
