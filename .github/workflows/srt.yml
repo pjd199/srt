@@ -63,5 +63,5 @@ jobs:
         with:
           name: ${{ inputs.slug }}-${{ inputs.version }}
           path: ./plans/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub
-          archive=false
+          archive: false
           retention-days: 7
