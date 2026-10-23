@@ -22,6 +22,8 @@ def get_bible_text(reference: str, version: str = "esv", refresh: bool = False) 
     """
     if not reference or reference.strip() == "":
         return ""
+
+    print(f"Reading {reference} from {version.upper()}")
         
     ver = version.lower().strip()
     

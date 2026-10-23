@@ -6,8 +6,9 @@ import html2text
 from .cache import fetch_url
 from .bible import get_bible_text
 from unicodedata import normalize
+from traceback import format_exc
 
-def build_plan(slug_or_url: str, refresh: bool = False):
+def build_plan(slug_or_url: str, version: str = "", refresh: bool = False):
     """
     Parses a plan URL or slug, downloads the plan overview (acting as the main index),
     extracts links, day numbers, and titles to individual study day pages via 
@@ -34,6 +35,7 @@ def build_plan(slug_or_url: str, refresh: bool = False):
     
     # 1. Fetch main plan overview page (acts as plan index)
     try:
+        print(f"Fetching plan index for {slug}.")
         main_html = fetch_url(url, refresh=refresh, ext="html")
     except Exception as e:
         print(f"Error fetching plan overview {url}: {e}")
@@ -44,6 +46,8 @@ def build_plan(slug_or_url: str, refresh: bool = False):
     # Extract plan title
     title_elem = soup.find("h1") or soup.select_one(".section__content h2")
     plan_title = title_elem.get_text(strip=True) if title_elem else slug.replace("-", " ").title()
+
+    print(f"Indexing data for {plan_title}")
     
     # Extract plan summary / description
     desc_elem = soup.select_one(".section__content p")
@@ -59,7 +63,8 @@ def build_plan(slug_or_url: str, refresh: bool = False):
             cover_image_path = os.path.join(img_dir, "cover.jpg")
             with open(cover_image_path, "wb") as f:
                 f.write(img_data)
-        except Exception:
+        except Exception as e:
+            print(format_exc())
             pass
 
     # 2. Extract links and titles to individual daily study days from table of contents blocks
@@ -99,6 +104,7 @@ def build_plan(slug_or_url: str, refresh: bool = False):
     # 3. Scrape each targeted daily study page
     for item in raw_day_links:
         try:
+            print(f"Processing day {item['day']} - {item['title']}")
             day_html = fetch_url(item["url"], ext="html")
             day_soup = BeautifulSoup(day_html, "html.parser")
             
@@ -133,10 +139,15 @@ def build_plan(slug_or_url: str, refresh: bool = False):
                         if "Scripture Reading:" in ref_text:
                             ref_text = ref_text.split(":")[-1].strip()
                         bible_ref = ref_text
-            
-            if not bible_ref:
+
+            if bible_ref:
+                if version != "":
+                    scripture_html = "".join(
+                        get_bible_text(ref_part.strip(), version)
+                        for ref_part in bible_ref.split(",")
+                    )
+            else:
                 bible_ref = f"Day {item['day']} Reading"
-            
 
             # 3. Devotional body content cleaning (remove trailing italicized author signature if present)
             if entry_el:
@@ -169,7 +180,8 @@ def build_plan(slug_or_url: str, refresh: bool = False):
                     day_img_filename = f"day{item['day']:03d}.jpg"
                     with open(os.path.join(img_dir, day_img_filename), "wb") as f:
                         f.write(d_img_data)
-                except Exception:
+                except Exception as e:
+                    print(format_exc())
                     pass
                     
             days_data.append({
@@ -177,78 +189,78 @@ def build_plan(slug_or_url: str, refresh: bool = False):
                 "title": item["title"],
                 "author": author,
                 "bible_ref": bible_ref,
+                "scripture": scripture_html,
                 "devotional": devotional_html,
                 "image": day_img_filename,
                 "url": item["url"]
             })
-        except Exception:
+        except Exception as e:
+            print(format_exc())
             continue
 
     # sort the days into order
     days_data.sort(key=lambda x: x["day"])
     
     # 4. Generate HTML and Markdown files for base and Bible versions (esv, niv, nlt, msg)
-    versions = ["base", "esv", "niv", "nlt", "msg"]
+    print(f"Generating HTML for {slug}{'-' + version if version != '' else ''}")
+    html_filename = os.path.join(html_dir, f"{slug}.html" if version == "" else f"{slug}-{version}.html")
+    md_filename = os.path.join(md_dir, f"{slug}.md" if version == "" else f"{slug}-{version}.md")
     
-    for ver in versions:
-        print(f"Generating {slug} - {ver}")
-        html_filename = os.path.join(html_dir, f"{slug}.html" if ver == "base" else f"{slug}-{ver}.html")
-        md_filename = os.path.join(md_dir, f"{slug}.md" if ver == "base" else f"{slug}-{ver}.md")
+    html_out = f"<html><head><meta charset='utf-8'><title>{plan_title} ({version.upper()})</title>"
+    html_out += "<link rel='stylesheet' href='../../assets/css/style.css'></head><body>"
+    html_out += f"<h1>{plan_title}</h1>"
+    html_out += f"<div class='copyright'><p>&copy; She Reads Truth</p></div>"
+    html_out += f"<div class='summary'><p>{plan_summary}</p></div>"
+    
+    if cover_image_path:
+        html_out += f"<img src='../../images/{slug}/cover.jpg' alt='Cover Image' />"
         
-        html_out = f"<html><head><meta charset='utf-8'><title>{plan_title} ({ver.upper()})</title>"
-        html_out += "<link rel='stylesheet' href='../../assets/css/style.css'></head><body>"
-        html_out += f"<h1>{plan_title}</h1>"
-        html_out += f"<div class='summary'><p>{plan_summary}</p></div>"
+    # Index Table of Contents linking to individual days
+    html_out += "<div class='toc'><h2>Table of Contents</h2></div>"
+    html_out += "<ul>"
+    for d in days_data:
+        html_out += f"<li><a href='#day{d['day']}'>(Day {d['day']}) {d['title']}</a> — <em>{d['bible_ref']}</em></li>"
+    html_out += "</ul><hr/>"
+
+    # Daily chapters
+    for d in days_data:
+        print(f"Day {d['day']}: {d['title']} {'(' + version.upper() + ')' if version != '' else ''}")
+
+        html_out += f"<section id='day{d['day']}'>"
+        html_out += f"<h2>Day {d['day']}: {d['title']}</h2>"
+        html_out += f"<p class='author'>By {d['author']}</p>"
+        html_out += f"<p class='bible-ref'><strong>Scripture Reading:</strong> {d['bible_ref']}</p>"
         
-        if cover_image_path:
-            html_out += f"<img src='../../images/{slug}/cover.jpg' alt='Cover Image' />"
+        if d['image']:
+            html_out += f"<img src='{img_dir}/{d['image']}' alt='Day {d['day']}' />"
             
-        # Index Table of Contents linking to individual days
-        html_out += "<h2>Table of Contents</h2>"
-        html_out += "<ul>"
-        for d in days_data:
-            html_out += f"<li><a href='#day{d['day']}'>(Day {d['day']}) {d['title']}</a> — <em>{d['bible_ref']}</em></li>"
-        html_out += "</ul><hr/>"
+        # Add scripture, if requested
+        if version != "":
+            html_out += f"<div class='bible-text'>{d['scripture']}</div>"
 
+        html_out += "<h3>Devotional</h3>"
+        html_out += f"<div class='devotional-body'>{d['devotional']}</div>"
+        html_out += "</section><hr/>"
+            
+    html_out += "</body></html>"
+
+    pretty_full_html = BeautifulSoup(html_out, "html.parser").prettify()
+    with open(html_filename, "w", encoding="utf-8") as f:
+        f.write(pretty_full_html)
         
-        # Daily chapters
-        for d in days_data:
-            print(f"Day {d['day']}: {d['title']} ({ver.upper()})")
-            html_out += f"<section id='day{d['day']}'>"
-            html_out += f"<h2>Day {d['day']}: {d['title']}</h2>"
-            html_out += f"<p class='author'>By {d['author']}</p>"
-            html_out += f"<p class='bible-ref'><strong>Scripture Reading:</strong> {d['bible_ref']}</p>"
-            
-            if d['image']:
-                html_out += f"<img src='{img_dir}/{d['image']}' alt='Day {d['day']}' />"
-                
-            # If bible version requested, split comma-separated references and query API sequentially
-            if ver != "base" and d['bible_ref']:
-                full_scripture_html = ""
-                for ref_part in d['bible_ref'].split(","):
-                    full_scripture_html += get_bible_text(ref_part.strip(), ver)
-                html_out += f"<div class='bible-text'>{full_scripture_html}</div>"
+    # Markdown conversion
+    print(f"Generating markdown for {slug}{'-' + version if version != '' else ''}")
+    try:
+        h2t = html2text.HTML2Text()
+        h2t.body_width = 0
+        with open(md_filename, "w", encoding="utf-8") as mf:
+            mf.write(h2t.handle(html_out))
+    except Exception as e:
+        print(format_exc())
+        pass
 
-            html_out += "<h3>Devotional</h3>"
-            html_out += f"<div class='devotional-body'>{d['devotional']}</div>"
-            html_out += "</section><hr/>"
-            
-        html_out += "</body></html>"
-
-        pretty_full_html = BeautifulSoup(html_out, "html.parser").prettify()
-        with open(html_filename, "w", encoding="utf-8") as f:
-            f.write(pretty_full_html)
-            
-        # Markdown conversion
-        try:
-            h2t = html2text.HTML2Text()
-            h2t.body_width = 0
-            with open(md_filename, "w", encoding="utf-8") as mf:
-                mf.write(h2t.handle(html_out))
-        except Exception:
-            pass
-
-def build_epub(slug: str, version: str = "base"):
+def build_epub(slug: str, version: str = ""):
+    print(f"Generating epub for {slug}{'-' + version if version != '' else ''}")
     epub_dir = f"./plans/epub/{slug}"
     img_dir = f"./plans/images/{slug}"
     os.makedirs(epub_dir, exist_ok=True)
@@ -289,7 +301,7 @@ def build_epub(slug: str, version: str = "base"):
     chapters = []
     
     # 2. Process HTML file sections and embed daily images
-    html_path = f"./plans/html/{slug}/{slug}.html" if version == "base" else f"./plans/html/{slug}/{slug}-{version}.html"
+    html_path = f"./plans/html/{slug}/{slug}.html" if version == "" else f"./plans/html/{slug}/{slug}-{version}.html"
     
     if os.path.exists(html_path):
         with open(html_path, "r", encoding="utf-8") as f:
@@ -345,7 +357,7 @@ def build_epub(slug: str, version: str = "base"):
     # Define spine
     book.spine = ["nav"] + chapters
     
-    epub_filename = f"{epub_dir}/{slug}.epub" if version == "base" else f"{epub_dir}/{slug}-{version}.epub"
+    epub_filename = f"{epub_dir}/{slug}.epub" if version == "" else f"{epub_dir}/{slug}-{version}.epub"
     epub.write_epub(epub_filename, book)
 
 def build_index_site():

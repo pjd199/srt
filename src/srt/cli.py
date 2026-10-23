@@ -15,36 +15,20 @@ def source(refresh):
     plans = scrape_plans_index(refresh=refresh)
     click.echo(f"Successfully saved {len(plans)} plans to ./plans/source.json")
 
-@main.command(name="build")
-@click.argument("slug_or_url")
-@click.option("--refresh", is_flag=True, help="Force refresh cache.")
-def build_cmd(slug_or_url, refresh):
-    """Build HTML, Markdown, and assets for a specific plan."""
-    click.echo(f"Building plan for {slug_or_url}...")
-    build_plan(slug_or_url, refresh=refresh)
-    click.echo("Build complete.")
-
-@main.command(name="epub")
-@click.argument("slug")
-@click.option("--version", default="base", help="Bible version (base, esv, niv, nlt, msg)")
-def epub_cmd(slug, version):
-    """Generate EPUB for a plan."""
-    click.echo(f"Generating EPUB ({version}) for {slug}...")
-    build_epub(slug, version=version)
-    click.echo("EPUB generation complete.")
-
 @main.command()
 @click.argument("slug_or_url")
+@click.argument(
+    "version",
+    type=click.Choice(["", "esv", "niv", "nlt", "msg"], case_sensitive=False),
+    default="",
+)
 @click.option("--refresh", is_flag=True, help="Force refresh cache.")
-def download(slug_or_url, refresh):
+def download(slug_or_url, version, refresh):
     """Download markdown, HTML, and EPUB versions for a plan."""
-    click.echo(f"Running full download pipeline for {slug_or_url}...")
-    build_plan(slug_or_url, refresh=refresh)
+    build_plan(slug_or_url, version, refresh=refresh)
     
     slug = slug_or_url.strip("/").split("/")[-1]
-    for ver in ["base", "esv", "niv", "nlt", "msg"]:
-        print(f"Generating epub ({slug}-{ver})")
-        build_epub(slug, version=ver)
+    build_epub(slug, version=version)
     
     click.echo("Download complete.")
 
