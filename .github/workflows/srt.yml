@@ -9,8 +9,10 @@ on:
         default: 'luke-2'
         type: string
       version:
-        type: choice
         description: Bible Translation
+        type: choice
+        required: true
+        default: 'esv'
         options:
         - niv
         - esv
@@ -53,13 +55,13 @@ jobs:
           API_BIBLE_KEY: ${{ secrets.API_BIBLE_KEY }}
           ESV_API_KEY: ${{ secrets.ESV_API_KEY }}
         run: |
-          srt download ${{ inputs.slug }} ${{ version }}
+          srt download ${{ inputs.slug }} ${{ inputs.version }}
 
       - name: Upload EPUB Artifacts
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: srt-epub-${{ inputs.slug }}-${{ version }}
-          path: ./plans/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ version }}.epub
+          name: ${{ inputs.slug }}-${{ inputs.version }}
+          path: ./plans/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub
           archive=false
           retention-days: 7
