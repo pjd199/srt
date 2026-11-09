@@ -58,20 +58,30 @@ jobs:
         run: |
           srt download ${{ inputs.slug }} ${{ inputs.version }}
 
+      - name: Rename SRT Artifact
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cp ./plans/shereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub \
+             srt-${{ inputs.slug }}-${{ inputs.version }}.epub
+
       - name: Upload SRT EPUB Artifact
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: srt-${{ inputs.slug }}-${{ inputs.version }}
-          path: ./plans/shereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub
+          path: srt-${{ inputs.slug }}-${{ inputs.version }}.epub
           archive: false
           retention-days: 7
 
-      - name: Upload HRT EPUB Artifacts
+      - name: Rename HRT Artifact
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          cp ./plans/shereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub \
+             hrt-${{ inputs.slug }}-${{ inputs.version }}.epub
+
+      - name: Upload HRT EPUB Artifact
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: hrt-${{ inputs.slug }}-${{ inputs.version }}
-          path: ./plans/hereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub
+          path: hrt-${{ inputs.slug }}-${{ inputs.version }}.epub
           archive: false
           retention-days: 7
