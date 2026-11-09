@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Scrapes She Reads Truth reading plans and converts them to EPUB/HTML/Markdown for Kindle."
 readme = "README.md"
 authors = [{ name = "Your Name", email = "your.email@example.com" }]
-license = { text = "MIT" }
+license = "MIT"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
