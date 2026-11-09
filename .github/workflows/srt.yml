@@ -40,7 +40,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ./cache
-          key: srt-cache-${{ hashFiles( './src/srt/cache.py') }}
+          key: srt-cache-${{ hashFiles( './src/srt/cache.py', '**/pyproject.toml' ) }}
           
       - name: Install Dependencies
         run: |
