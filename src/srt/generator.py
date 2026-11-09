@@ -221,16 +221,23 @@ def download_plan(
     if images and cover_image_path:
         html_out += f"<img src='../../images/{slug}/cover.jpg' alt='Cover Image' />"
 
-    html_out += (
-        f"<section id='summary'><h2>Overview</h2><p>{plan_summary}</p></section>"
-    )
+    today = datetime.today()
+    html_out += "<section id='overview'>"
+    html_out += "<h2>Overview</h2>"
+    html_out += f"<p>{plan_summary}</p>"
+    html_out += f"<p>Plan downloaded from {URL.format(domain=domain,slug=slug)} on {today.day} {today.strftime('%B %Y')}</p>"
+    html_out += f"<p>&copy; {"She"if domain == SHEREADSTRUTH else "He"} Reads Truth</p>"
+    if version != "":
+        html_out += f"<p>Scripture &copy; {version.upper()}</p>"
+        html_out += f"<p>{get_copyright(version)}</p>"
+    html_out += "</section>"
 
     # Index Table of Contents linking to individual days
     html_out += "<div class='toc'><h2>Table of Contents</h2></div>"
     html_out += "<ul>"
     for d in days_data:
         html_out += f"<li><a href='#day{d['day']}'>(Day {d['day']}) {d['title']}</a> — <em>{d['bible_ref']}</em></li>"
-    html_out += "</ul><hr/>"
+    html_out += "</ul><hr/></div>"
 
     # Daily chapters
     for d in days_data:
@@ -253,16 +260,6 @@ def download_plan(
         html_out += "<h3>Devotional</h3>"
         html_out += f"<div class='devotional-body'>{d['devotional']}</div>"
         html_out += "</section><hr/>"
-
-    today = datetime.today()
-    html_out += "<section id='copyright'>"
-    html_out += "<h2>Copyright</h2><div class='copyright'>"
-    html_out += f"<p>&copy; {"She"if domain == SHEREADSTRUTH else "He"} Reads Truth</p>"
-    html_out += f"<p>Downloaded from {URL.format(domain=domain,slug=slug)} on {today.day} {today.strftime('%B %Y')}</p>"
-    if version != "":
-        html_out += f"<p>Scripture &copy; {version.upper()}</p>"
-        html_out += f"<p>{get_copyright(version)}</p>"
-    html_out += "</section></div>"
 
     html_out += "</body></html>"
 
