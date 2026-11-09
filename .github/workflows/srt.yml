@@ -75,7 +75,7 @@ jobs:
       - name: Rename HRT Artifact
         if: github.event_name == 'workflow_dispatch'
         run: |
-          cp ./plans/shereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub \
+          cp ./plans/hereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub \
              hrt-${{ inputs.slug }}-${{ inputs.version }}.epub
 
       - name: Upload HRT EPUB Artifact
