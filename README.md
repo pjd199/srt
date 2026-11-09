@@ -1,6 +1,6 @@
-# SRT Scraper & EPUB Converter
+# SRT Scraper
 
-A command-line Python tool to scrape reading plans from [She Reads Truth](https://shereadstruth.com/plans/), generate HTML, Markdown, and Kindle-compatible EPUB files (with Bible version integrations), and build a local library index.
+A command-line Python tool to scrape reading plans from [She Reads Truth](https://shereadstruth.com/plans/) and [He Reads Truth](https://hereadstruth.com/plans/), generate HTML, Markdown, and Kindle-compatible EPUB files (with Bible version integrations), and build a local library index.
 
 ## Features
 - Scrapes all available plans from She Reads Truth with caching and rate-limiting.
@@ -21,9 +21,13 @@ export API_BIBLE_KEY="your_api_bible_key"
 ```
 
 ## CLI Usage
+```
+Usage: srt download [OPTIONS] SLUG [|esv|niv|nlt|msg]
 
-- `srt source` - Scrapes available plans into `./plans/source.json`.
-- `srt build <slug|url>` - Builds HTML and Markdown for a specific plan.
-- `srt epub <slug>` - Generates EPUB files for a plan.
-- `srt download <slug|url>` - Complete pipeline (Markdown, HTML, EPUB across versions).
-- `srt index` - Builds `index.html` referencing processed plans.
+Download markdown, HTML, and EPUB versions for a plan.
+
+Options:
+  --images   Include chapter images.
+  --refresh  Force refresh cache.
+  --help     Show this message and exit.
+```

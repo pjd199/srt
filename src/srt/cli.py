@@ -1,6 +1,5 @@
 import click
-from .scraper import scrape_plans_index
-from .generator import build_plan, build_epub, build_index_site
+from .generator import download_plan, markdown_conversion, build_epub, SHEREADSTRUTH, HEREADSTRUTH
 
 @click.group()
 def main():
@@ -8,36 +7,21 @@ def main():
     pass
 
 @main.command()
-@click.option("--refresh", is_flag=True, help="Force refresh cache.")
-def source(refresh):
-    """Scrape available plans and save to ./plans/source.json"""
-    click.echo("Scraping plans index...")
-    plans = scrape_plans_index(refresh=refresh)
-    click.echo(f"Successfully saved {len(plans)} plans to ./plans/source.json")
-
-@main.command()
-@click.argument("slug_or_url")
+@click.argument("slug")
 @click.argument(
     "version",
     type=click.Choice(["", "esv", "niv", "nlt", "msg"], case_sensitive=False),
     default="",
 )
+@click.option("--images", is_flag=True, default=False, help="Include chapter images.")
 @click.option("--refresh", is_flag=True, help="Force refresh cache.")
-def download(slug_or_url, version, refresh):
+def download(slug, version, refresh, images):
     """Download markdown, HTML, and EPUB versions for a plan."""
-    build_plan(slug_or_url, version, refresh=refresh)
-    
-    slug = slug_or_url.strip("/").split("/")[-1]
-    build_epub(slug, version=version)
-    
+    for domain in (SHEREADSTRUTH, HEREADSTRUTH):
+        download_plan(domain, slug, version=version, refresh=refresh)
+        markdown_conversion(domain, slug, version=version)
+        build_epub(domain, slug, version=version, images=images)
     click.echo("Download complete.")
-
-@main.command()
-def index():
-    """Build the index website linking all downloaded plans."""
-    click.echo("Building website index...")
-    build_index_site()
-    click.echo("Index built successfully.")
 
 if __name__ == "__main__":
     main()

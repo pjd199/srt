@@ -15,6 +15,7 @@ BIBLE_IDS = {
 }
 
 _BOOKS_CACHE = {}
+_COPYRIGHT_CACHE = {}
 
 def get_bible_text(reference: str, version: str = "esv", refresh: bool = False) -> str:
     """
@@ -124,3 +125,33 @@ def fetch_apibible_passage(reference: str, version: str, refresh: bool = False) 
     except Exception as e:
         print(e)
         return "ERROR {reference}, {version})"
+
+def get_copyright(version: str, refresh: bool = False) -> str:
+    """
+    Retrieves the copyright notice for a given Bible version.
+    """
+    ver = version.lower().strip()
+    if ver in _COPYRIGHT_CACHE and not refresh:
+        return _COPYRIGHT_CACHE[ver]
+
+    copyright_text = ""
+    
+    if ver == "esv":
+        copyright_text = "The Holy Bible, English Standard Version (ESV). Copyright 2016 by Crossway"
+    else:
+        bible_id = BIBLE_IDS.get(ver)
+        if bible_id:
+            url = f"https://api.scripture.api.bible/v1/bibles/{bible_id}"
+            headers = {"api-key": API_BIBLE_KEY}
+            try:
+                res_text = fetch_url(url, refresh, ext="json", headers=headers)
+                data = json.loads(res_text)
+                copyright_text = data.get("data", {}).get("copyright", "").strip()
+            except Exception as e:
+                print(e)
+                copyright_text = f"Copyright information unavailable for {version.upper()}."
+        else:
+            copyright_text = f"Unknown Bible version: {version}"
+
+    _COPYRIGHT_CACHE[ver] = copyright_text
+    return copyright_text
