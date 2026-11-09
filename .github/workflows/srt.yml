@@ -62,7 +62,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ inputs.slug }}-${{ inputs.version }}
+          name: srt-${{ inputs.slug }}-${{ inputs.version }}
           path: ./plans/shereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub
           archive: false
           retention-days: 7
@@ -71,7 +71,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ inputs.slug }}-${{ inputs.version }}
+          name: hrt-${{ inputs.slug }}-${{ inputs.version }}
           path: ./plans/hereadstruth.com/epub/${{ inputs.slug }}/${{ inputs.slug }}-${{ inputs.version }}.epub
           archive: false
           retention-days: 7
